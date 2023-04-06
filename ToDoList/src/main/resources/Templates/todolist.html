@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>todoList</title>
+</head>
+
+<style>
+    .modal{
+        position:absolute;
+        width:100%;
+        height:100%;
+        background:black;
+        top:0;
+        left:0;
+        display:none;
+    }
+</style>
+
+<body>
+
+<h1>todoList_HW</h1>
+<form th:action="@{/todo/create}" method="post">
+    <input name="content" placeholder="오늘의 할 일을 적어보세요!"/>
+    <button>작성</button>
+</form>
+
+<table>                     <!--table : 표를 만드는 태그-->
+    <thead>
+    <tr>
+        <th>번호</th>       <!--th(table_head) : 표의 제목-->
+        <th>작업</th>       <!--tr(table_row) : 표의 가로줄-->
+        <th>check</th>     <!--td(table_data) : 표의 데이터-->
+        <th>삭제</th>
+        <th>수정</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    <tr th:block th:each="todoentity : ${toDoEntityList}">
+        <td th:text="${todoentity.id}"></td>                                                          <!--번호, [text]-->
+        <td th:text="${todoentity.content}"></td>                                                     <!--todo, [text]-->
+        <td><input type="checkbox" name="check" value="yyy"></td>                                     <!--check, [checkbox]-->
+        <td><button id="delete-btn" th:onclick="deleteItem([[${todoentity.id}]])">삭제</button></td>   <!--삭제, [button]-->
+        <td><button id="reviseBtn" th:onclick="openModal([[${todoentity.id}]])">수정</button></td>     <!--수정, [button]-->
+    </tr>
+    </tbody>
+</table>
+
+<div class="modal">
+    <div class="modal_content">
+        <input id="revise" placeholder="내용을 수정해주세요"/>
+        <button type="submit" id="completeBtn" onclick="reviseItem()">완료</button>
+    </div>
+</div>
+
+</body>
+
+<script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+<script>
+
+    let value = "";
+    function deleteItem(id){
+        console.log(id)
+        const url = "/todo/delete/" + id
+        $.ajax({
+            type:'delete',
+            url:url,
+            contentType:'application/json; charset=utf-8'
+        }).done(function(){
+            alert('할 일이 삭제되었습니다.');
+            window.location.href = '/';
+        }).fail(function(error){
+            alert(JSON.stringify(error));
+        });
+    }
+
+    function openModal(id){
+        value=id
+        $(".modal").fadeIn();
+    }
+
+    function reviseItem(){
+
+        var id = value;
+        console.log(id)
+        var contentWritten = document.getElementById("revise").value;
+        var updateContent = contentWritten;
+        console.log(updateContent)
+        const url = "/todo/update/"+id;
+        $.ajax({
+            type: 'put',
+            url: url,
+            contentType: 'application/json; charset=utf-8',
+            data: updateContent,
+        }).done(function() {
+            alert('할 일이 수정되었습니다.');
+            window.location.href = '/';
+        }).fail(function(error) {
+            alert(JSON.stringify(error));
+        });
+
+        $(".modal").fadeOut();
+    }
+
+</script>
+</html>
